@@ -1,0 +1,100 @@
+version: '3'
+services:
+  ##MySQLDB config
+  mysql:
+    image: mysql:8.0
+    command: --default-authentication-plugin=mysql_native_password
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE=sampledb
+      - MYSQL_PASSWORD=root
+    volumes:
+      - "./scripts/schema.sql:/docker-entrypoint-initdb.d/1.sql"
+      - "./scripts/data.sql:/docker-entrypoint-initdb.d/2.sql"
+    expose:
+      - "3306"
+    ports:
+      - "3306:3306"
+    restart: unless-stopped
+
+  ## Zipkin
+  zipkin:
+    image: openzipkin/zipkin
+    container_name: zipkin
+    ports:
+      - "9411:9411"
+
+  ##EUREKA SERVER CONFIG
+  discovery-server:
+    image: ricmarin/discovery-server:latest
+    container_name: discovery-server
+    hostname: eureka-server
+    pull_policy: always
+    ports:
+      - "8761:8761"
+
+  ##GATEWAY CONFIG
+  gateway:
+    image: ricmarin/gateway:latest
+    container_name: gateway
+    pull_policy: always
+    ports:
+      - "8080:8080"
+    expose:
+      - "8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    depends_on:
+      - discovery-server
+
+  ##USER CONFIG
+
+  user-service:
+    container_name: user-service
+    image: ricmarin/user-service:latest
+    pull_policy: always
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    depends_on:
+      - discovery-server
+      - mysql
+      - gateway
+
+  ##BRAND CONFIG
+
+  brand-service:
+    container_name: brand-service
+    image: ricmarin/brand-service:latest
+    pull_policy: always
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    depends_on:
+      - discovery-server
+      - mysql
+      - gateway
+
+  ##CLOTHES CONFIG
+
+  clothes-service:
+    container_name: clothes-service
+    image: ricmarin/clothes-service:latest
+    pull_policy: always
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    depends_on:
+      - discovery-server
+      - mysql
+      - gateway
+
+  ##TRANSACTION CONFIG
+
+  transaction-service:
+    container_name: transaction-service
+    image: ricmarin/transaction-service:latest
+    pull_policy: always
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    depends_on:
+      - discovery-server
+      - mysql
+      - gateway

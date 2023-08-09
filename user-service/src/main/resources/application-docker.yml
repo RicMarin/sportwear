@@ -1,0 +1,25 @@
+
+server:
+  port: 0
+
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://discovery-server:8761/eureka
+app:
+  eureka:
+    server: discovery-server
+
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: "jdbc:mysql://mysql:3306/sampledb?allowPublicKeyRetrieval=true&autoReconnect=true&useSSL=false&useUnicode=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC"
+    username: root
+    password: root
+  application:
+    name: user-service
+
+management:
+  zipkin:
+    tracing:
+      endpoint: http://zipkin:9411
